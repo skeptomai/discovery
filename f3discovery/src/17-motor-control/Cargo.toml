@@ -1,0 +1,12 @@
+[package]
+name = "motor-control"
+edition = "2021"
+version = "0.1.0"
+
+[dependencies]
+aux17 = { path = "auxiliary" }
+switch-hal = "0.4.0"
+
+[dependencies.stm32f3]
+version = "0.12.1"
+features = ["stm32f303", "rt"]

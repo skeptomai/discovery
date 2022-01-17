@@ -2,12 +2,22 @@
 #![no_std]
 
 #[allow(unused_imports)]
-use aux7::{entry, iprint, iprintln};
+use aux7::{entry, iprint, iprintln, ITM, RegisterBlock};
+use switch_hal::OutputSwitch;
 
 #[entry]
 fn main() -> ! {
-    aux7::init();
+    
+    let (_, gpioe, (mut step, mut direction)) = aux7::init();
 
+    gpioe.bsrr.write(|w| w.bs9().set_bit());
+    gpioe.bsrr.write(|w| w.bs11().set_bit());
+
+    step.on().unwrap();
+    direction.on().unwrap();
+
+
+/*
     unsafe {
         // A magic address!
         const GPIOE_BSRR: u32 = 0x48001018;
@@ -24,6 +34,6 @@ fn main() -> ! {
         // Turn off the "East" LED
         *(GPIOE_BSRR as *mut u32) = 1 << (11 + 16);
     }
-
+ */    
     loop {}
 }

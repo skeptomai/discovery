@@ -1,7 +1,12 @@
 #![no_main]
 #![no_std]
 
-use aux9::{entry, switch_hal::OutputSwitch, tim6};
+use aux17::_embedded_hal_digital_OutputPin;
+use aux17::_embedded_hal_digital_ToggleableOutputPin;
+
+#[allow(unused_imports)]
+
+use aux17::{entry, tim6};
 
 #[inline(never)]
 fn delay(tim6: &tim6::RegisterBlock, ms: u16) {
@@ -21,8 +26,8 @@ fn delay(tim6: &tim6::RegisterBlock, ms: u16) {
 
 #[entry]
 fn main() -> ! {
-    let (leds, rcc, tim6) = aux9::init();
-    let mut leds = leds.into_array();
+
+    let (_, (mut step, mut direction), rcc, tim6) = aux17::init();
 
     // Power up the timer
     rcc.apb1enr.modify(|_,w| w.tim6en().set_bit());
@@ -32,17 +37,23 @@ fn main() -> ! {
     // APB1_CLOCK = 8 MHz
     // PSC = 7999
     // 8 MHz / (7999 + 1) = 1 KHz    
-    tim6.psc.write(|w| w.psc().bits(7_999));
+    tim6.psc.write(|w| w.psc().bits(7_999));    
 
-    let ms = 50;
-    loop {
-        for curr in 0..8 {
-            let next = (curr + 1) % 8;
+    // motor direction forward / right
+    direction.set_high().unwrap();
 
-            leds[next].on().unwrap();
-            delay(tim6, ms);
-            leds[curr].off().unwrap();
-            delay(tim6, ms);
+    for _ in 0..2 {
+
+        for _ in 0..400 {
+            step.toggle().unwrap();
+            delay(tim6, 10);
         }
+
+        delay(tim6, 100);
+        direction.toggle().unwrap();
+        
     }
+
+
+    loop {}
 }
